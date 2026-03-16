@@ -7,6 +7,8 @@
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-orange.svg)](https://github.com/astral-sh/ruff)
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/jgrillo18/secure-enterprise-auth-system)
 
+**🚀 Live demo:** https://secure-enterprise-auth-system.onrender.com
+
 Enterprise-grade authentication system with JWT, refresh tokens, rate limiting and secure password hashing — designed for SaaS, microservices and cloud APIs.
 
 ---
@@ -78,7 +80,8 @@ secure-enterprise-auth-system/
    - **PostgreSQL database** — gratis incluida
 4. Haz clic en **Apply** — en ~3 minutos estará en vivo
 
-Tu URL pública será: `https://secure-enterprise-auth-system.onrender.com`
+**Live demo:** https://secure-enterprise-auth-system.onrender.com  
+**API docs:** https://secure-enterprise-auth-system.onrender.com/docs
 
 ---
 
