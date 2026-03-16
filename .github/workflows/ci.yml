@@ -42,6 +42,7 @@ jobs:
         env:
           DATABASE_URL: sqlite:///./test_auth.db
           SECRET_KEY: ci-test-secret-key-not-for-production
+          RATELIMIT_ENABLED: "0"
         run: pytest tests/ -v --tb=short
 
   lint:

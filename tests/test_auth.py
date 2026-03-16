@@ -4,6 +4,11 @@ Integration tests for the Secure Enterprise Auth System.
 These tests use FastAPI's TestClient (backed by httpx) so no live server is needed.
 The SQLite in-memory engine is created once per session for isolation and speed.
 """
+import os
+
+# Disable rate limiting before any app module is imported
+os.environ["RATELIMIT_ENABLED"] = "0"
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
