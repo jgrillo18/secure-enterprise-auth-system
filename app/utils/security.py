@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta
 
-from jose import JWTError, jwt
+from jose import jwt
 from passlib.context import CryptContext
 
 # ── Configuration (override via environment variables) ─────────────────────────
