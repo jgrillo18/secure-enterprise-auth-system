@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Enterprise Auth System</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --border:    #2a2d3e;
+      --accent:    #6c63ff;
+      --accent-h:  #8b85ff;
+      --success:   #22c55e;
+      --error:     #ef4444;
+      --warning:   #f59e0b;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --radius:    12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p { color: var(--muted); margin-top: .4rem; font-size: .9rem; }
+
+    /* ── Badges ── */
+    .badges { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; margin-top: .75rem; }
+    .badge {
+      font-size: .7rem; font-weight: 600; padding: .2rem .6rem;
+      border-radius: 999px; border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* ── Layout ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      width: 100%;
+      max-width: 1160px;
+    }
+    .grid-bottom {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+      width: 100%;
+      max-width: 1160px;
+      margin-top: 1.25rem;
+    }
+    @media (max-width: 900px) {
+      .grid, .grid-bottom { grid-template-columns: 1fr; }
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .card h2 .icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem;
+    }
+
+    /* ── Form ── */
+    .field { margin-bottom: 1rem; }
+    label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .35rem; font-weight: 500; }
+    input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: .6rem .85rem;
+      font-size: .9rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus { border-color: var(--accent); }
+
+    .btn {
+      width: 100%;
+      padding: .65rem;
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      color: #fff;
+      margin-top: .25rem;
+    }
+    .btn:hover { opacity: .9; }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── Response box ── */
+    .response {
+      margin-top: 1rem;
+      border-radius: 8px;
+      padding: .85rem;
+      font-size: .8rem;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      display: none;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .response.ok    { border-color: var(--success); color: var(--success); }
+    .response.err   { border-color: var(--error);   color: var(--error);   }
+    .response.info  { border-color: var(--accent);  color: var(--accent);  }
+
+    /* ── Token display card ── */
+    #token-section { display: none; }
+    .token-row {
+      margin-bottom: .75rem;
+    }
+    .token-row label { font-size: .75rem; color: var(--muted); margin-bottom: .25rem; }
+    .token-value {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .5rem .75rem;
+      font-size: .72rem;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      word-break: break-all;
+      color: var(--accent);
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .token-value:hover { border-color: var(--accent); }
+
+    .copy-hint { font-size: .7rem; color: var(--muted); margin-top: .2rem; }
+
+    /* ── Status bar ── */
+    #status-bar {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: .45rem 1.25rem;
+      font-size: .8rem;
+      color: var(--muted);
+      display: none;
+      gap: .5rem;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    }
+    #status-bar.show { display: flex; }
+    #status-bar.ok  { border-color: var(--success); color: var(--success); }
+    #status-bar.err { border-color: var(--error);   color: var(--error);   }
+
+    /* ── Password rules ── */
+    .pw-rules { margin-top: .6rem; display: flex; flex-direction: column; gap: .3rem; }
+    .rule {
+      font-size: .78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      transition: color .2s;
+    }
+    .rule .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: background .2s;
+    }
+    .rule.pass       { color: var(--success); }
+    .rule.pass .dot  { background: var(--success); }
+    .rule.fail       { color: var(--error); }
+    .rule.fail .dot  { background: var(--error); }
+
+    /* ── Lang toggle ── */
+    #lang-bar {
+      position: fixed;
+      top: 1rem;
+      right: 1.25rem;
+      z-index: 100;
+    }
+    #lang-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: .8rem;
+      font-weight: 600;
+      padding: .35rem .9rem;
+      transition: border-color .2s, color .2s;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    #lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Footer ── */
+    footer { margin-top: 2.5rem; color: var(--muted); font-size: .75rem; text-align: center; }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- ── Language toggle ── -->
+<div id="lang-bar">
+  <button id="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">Español</span></button>
+</div>
+
+<header>
+  <h1>🔐 Secure Enterprise Auth</h1>
+  <p data-i18n="subtitle">JWT · Refresh Tokens · bcrypt · Rate Limiting · CSRF Protection</p>
+  <div class="badges">
+    <span class="badge">FastAPI</span>
+    <span class="badge">SQLAlchemy</span>
+    <span class="badge">python-jose</span>
+    <span class="badge">passlib bcrypt</span>
+    <span class="badge">slowapi</span>
+  </div>
+</header>
+
+<div class="grid">
+
+  <!-- ── Register ── -->
+  <div class="card">
+    <h2><span class="icon">✨</span> <span data-i18n="reg_title">Register</span></h2>
+    <form onsubmit="return false" autocomplete="on">
+      <div class="field">
+        <label data-i18n="email">Email</label>
+        <input id="reg-email" type="email" autocomplete="email" placeholder="user@company.com" />
+      </div>
+      <div class="field">
+        <label data-i18n="password">Password</label>
+        <input id="reg-password" type="password" autocomplete="new-password"
+               placeholder="SecurePass1" oninput="checkPasswordRules(this.value)" />
+        <div class="pw-rules" id="pw-rules">
+          <div class="rule" id="rule-len"><span class="dot"></span> <span data-i18n="rule_len">At least 8 characters</span></div>
+          <div class="rule" id="rule-up"> <span class="dot"></span> <span data-i18n="rule_up">At least 1 uppercase letter (A–Z)</span></div>
+          <div class="rule" id="rule-num"><span class="dot"></span> <span data-i18n="rule_num">At least 1 digit (0–9)</span></div>
+        </div>
+      </div>
+      <button class="btn" onclick="register()" data-i18n="reg_btn">Create Account</button>
+    </form>
+    <div id="reg-response" class="response"></div>
+  </div>
+
+  <!-- ── Login ── -->
+  <div class="card">
+    <h2><span class="icon">🔑</span> <span data-i18n="login_title">Login</span></h2>
+    <form onsubmit="return false" autocomplete="on">
+      <div class="field">
+        <label data-i18n="email">Email</label>
+        <input id="login-email" type="email" autocomplete="email" placeholder="user@company.com" />
+      </div>
+      <div class="field">
+        <label data-i18n="password">Password</label>
+        <input id="login-password" type="password" autocomplete="current-password" placeholder="SecurePass1" />
+      </div>
+      <button class="btn" onclick="login()" data-i18n="login_btn">Sign In</button>
+    </form>
+    <div id="login-response" class="response"></div>
+  </div>
+
+  <!-- ── Active Session ── -->
+  <div class="card" id="token-section">
+    <h2><span class="icon">🎟</span> <span data-i18n="session_title">Active Session</span></h2>
+    <div class="token-row">
+      <label>ACCESS TOKEN</label>
+      <div class="token-value" onclick="copyText(this)" id="display-access"></div>
+      <div class="copy-hint" data-i18n="copy_hint">Click to copy</div>
+    </div>
+    <div class="token-row">
+      <label>REFRESH TOKEN</label>
+      <div class="token-value" onclick="copyText(this)" id="display-refresh"></div>
+      <div class="copy-hint" data-i18n="copy_hint">Click to copy</div>
+    </div>
+    <div class="token-row">
+      <label>CSRF TOKEN</label>
+      <div class="token-value" onclick="copyText(this)" id="display-csrf"></div>
+      <div class="copy-hint" data-i18n="copy_hint">Click to copy</div>
+    </div>
+    <button class="btn" onclick="refresh()" style="margin-top:.75rem" data-i18n="refresh_btn">🔄 Refresh Access Token</button>
+    <div id="refresh-response" class="response"></div>
+  </div>
+
+</div>
+
+<!-- ── Bottom row ── -->
+<div class="grid-bottom">
+
+  <!-- ── Health ── -->
+  <div class="card">
+    <h2><span class="icon">💚</span> <span data-i18n="health_title">Service Health</span></h2>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:1rem" data-i18n="health_desc">
+      Ping the auth service to confirm it's running.
+    </p>
+    <button class="btn" onclick="checkHealth()" data-i18n="health_btn">Check Health</button>
+    <div id="health-response" class="response"></div>
+  </div>
+
+  <!-- ── API links ── -->
+  <div class="card">
+    <h2><span class="icon">📄</span> <span data-i18n="docs_title">API Documentation</span></h2>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:1rem" data-i18n="docs_desc">
+      Interactive docs auto-generated by FastAPI.
+    </p>
+    <a href="/docs" target="_blank" class="btn" style="display:block;text-align:center;text-decoration:none;margin-bottom:.75rem"
+       data-i18n="docs_swagger">Open Swagger UI →</a>
+    <a href="/redoc" target="_blank" class="btn" style="display:block;text-align:center;text-decoration:none;background:linear-gradient(135deg,#334155,#475569)"
+       data-i18n="docs_redoc">Open ReDoc →</a>
+  </div>
+
+</div>
+
+<!-- ── Status toast ── -->
+<div id="status-bar"></div>
+
+<footer>
+  <p><span data-i18n="footer_api">API docs:</span> <a href="/docs" target="_blank">/docs</a> &nbsp;·&nbsp; <a href="/redoc" target="_blank">/redoc</a></p>
+</footer>
+
+<script>
+  const API = '';    // same origin
+  let tokens = {};
+  let currentLang = 'en';
+
+  // ── i18n ───────────────────────────────────────────────────────────────────
+  const translations = {
+    en: {
+      subtitle:     'JWT · Refresh Tokens · bcrypt · Rate Limiting · CSRF Protection',
+      reg_title:    'Register',
+      email:        'Email',
+      password:     'Password',
+      rule_len:     'At least 8 characters',
+      rule_up:      'At least 1 uppercase letter (A–Z)',
+      rule_num:     'At least 1 digit (0–9)',
+      reg_btn:      'Create Account',
+      login_title:  'Login',
+      login_btn:    'Sign In',
+      session_title:'Active Session',
+      copy_hint:    'Click to copy',
+      refresh_btn:  '🔄 Refresh Access Token',
+      health_title: 'Service Health',
+      health_desc:  "Ping the auth service to confirm it's running.",
+      health_btn:   'Check Health',
+      docs_title:   'API Documentation',
+      docs_desc:    'Interactive docs auto-generated by FastAPI.',
+      docs_swagger: 'Open Swagger UI →',
+      docs_redoc:   'Open ReDoc →',
+      footer_api:   'API docs:',
+      toast_copy:   'Copied to clipboard ✓',
+      toast_fill:   'Fill in both fields',
+      toast_ok_reg: '✅ Account created!',
+      toast_ok_login:'✅ Logged in!',
+      toast_ok_ref: '✅ Access token refreshed!',
+      toast_err_cred:'❌ Invalid credentials',
+      toast_err_ref: '❌ Refresh failed',
+      toast_err_login:'Login first to get a refresh token',
+      toast_healthy: '✅ Service healthy',
+      toast_down:    '❌ Service down',
+      lang_toggle:   'Español',
+    },
+    es: {
+      subtitle:     'JWT · Refresh Tokens · bcrypt · Límite de tasa · Protección CSRF',
+      reg_title:    'Registro',
+      email:        'Correo electrónico',
+      password:     'Contraseña',
+      rule_len:     'Mínimo 8 caracteres',
+      rule_up:      'Al menos 1 letra mayúscula (A–Z)',
+      rule_num:     'Al menos 1 dígito (0–9)',
+      reg_btn:      'Crear cuenta',
+      login_title:  'Iniciar sesión',
+      login_btn:    'Entrar',
+      session_title:'Sesión activa',
+      copy_hint:    'Clic para copiar',
+      refresh_btn:  '🔄 Renovar token de acceso',
+      health_title: 'Estado del servicio',
+      health_desc:  'Verifica que el servicio de autenticación esté operativo.',
+      health_btn:   'Verificar estado',
+      docs_title:   'Documentación de la API',
+      docs_desc:    'Docs interactivos generados automáticamente por FastAPI.',
+      docs_swagger: 'Abrir Swagger UI →',
+      docs_redoc:   'Abrir ReDoc →',
+      footer_api:   'Documentación API:',
+      toast_copy:   'Copiado al portapapeles ✓',
+      toast_fill:   'Completa ambos campos',
+      toast_ok_reg: '✅ ¡Cuenta creada!',
+      toast_ok_login:'✅ ¡Sesión iniciada!',
+      toast_ok_ref: '✅ Token de acceso renovado',
+      toast_err_cred:'❌ Credenciales inválidas',
+      toast_err_ref: '❌ Error al renovar el token',
+      toast_err_login:'Inicia sesión primero para obtener un refresh token',
+      toast_healthy: '✅ Servicio operativo',
+      toast_down:    '❌ Servicio caído',
+      lang_toggle:   'English',
+    }
+  };
+
+  function t(key) {
+    return translations[currentLang][key] || key;
+  }
+
+  function applyLang() {
+    document.documentElement.lang = currentLang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      el.textContent = t(key);
+    });
+    document.getElementById('lang-label').textContent = t('lang_toggle');
+  }
+
+  function toggleLang() {
+    currentLang = currentLang === 'en' ? 'es' : 'en';
+    applyLang();
+  }
+
+  // ── helpers ────────────────────────────────────────────────────────────────
+
+  function show(id, data, isError=false) {
+    const el = document.getElementById(id);
+    el.style.display = 'block';
+    el.className = 'response ' + (isError ? 'err' : 'ok');
+    el.textContent = JSON.stringify(data, null, 2);
+  }
+
+  function toast(msg, ok=true) {
+    const bar = document.getElementById('status-bar');
+    bar.textContent = msg;
+    bar.className = 'show ' + (ok ? 'ok' : 'err');
+    clearTimeout(bar._t);
+    bar._t = setTimeout(() => bar.className = '', 3000);
+  }
+
+  async function apiFetch(path, body) {
+    const res = await fetch(API + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    let data;
+    try {
+      data = await res.json();
+    } catch (_) {
+      data = { detail: `Server error ${res.status} — check the uvicorn terminal for details.` };
+    }
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  function copyText(el) {
+    navigator.clipboard.writeText(el.textContent).then(() => toast(t('toast_copy')));
+  }
+
+  function renderTokens(data) {
+    document.getElementById('display-access').textContent  = data.access_token  || '—';
+    document.getElementById('display-refresh').textContent = data.refresh_token || '—';
+    document.getElementById('display-csrf').textContent    = data.csrf_token    || '—';
+    document.getElementById('token-section').style.display = 'block';
+    tokens = data;
+  }
+
+  // ── actions ────────────────────────────────────────────────────────────────
+
+  async function register() {
+    const email    = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    if (!email || !password) return toast(t('toast_fill'), false);
+
+    const { ok, data } = await apiFetch('/auth/register', { email, password });
+    show('reg-response', data, !ok);
+    toast(ok ? t('toast_ok_reg') : '❌ ' + (data.detail || 'Error'), ok);
+  }
+
+  async function login() {
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) return toast(t('toast_fill'), false);
+
+    const { ok, data } = await apiFetch('/auth/login', { email, password });
+    show('login-response', data, !ok);
+    if (ok) {
+      renderTokens(data);
+      toast(t('toast_ok_login'));
+    } else {
+      toast('❌ ' + (data.detail || t('toast_err_cred')), false);
+    }
+  }
+
+  async function refresh() {
+    if (!tokens.refresh_token) return toast(t('toast_err_login'), false);
+
+    const { ok, data } = await apiFetch('/auth/refresh', { refresh_token: tokens.refresh_token });
+    show('refresh-response', data, !ok);
+    if (ok) {
+      tokens.access_token = data.access_token;
+      document.getElementById('display-access').textContent = data.access_token;
+      toast(t('toast_ok_ref'));
+    } else {
+      toast('❌ ' + (data.detail || t('toast_err_ref')), false);
+    }
+  }
+
+  async function checkHealth() {
+    const res  = await fetch(API + '/auth/health');
+    const data = await res.json();
+    const el   = document.getElementById('health-response');
+    el.style.display = 'block';
+    el.className = 'response ' + (res.ok ? 'ok' : 'err');
+    el.textContent = JSON.stringify(data, null, 2);
+    toast(res.ok ? t('toast_healthy') : t('toast_down'), res.ok);
+  }
+
+  // ── Password rule checker ───────────────────────────────────────────────
+  function checkPasswordRules(value) {
+    const rules = [
+      { id: 'rule-len',  ok: value.length >= 8 },
+      { id: 'rule-up',   ok: /[A-Z]/.test(value) },
+      { id: 'rule-num',  ok: /[0-9]/.test(value) },
+    ];
+    rules.forEach(({ id, ok }) => {
+      const el = document.getElementById(id);
+      el.classList.toggle('pass', ok);
+      el.classList.toggle('fail', value.length > 0 && !ok);
+    });
+  }
+
+  // Auto-check health on load
+  window.addEventListener('load', () => { applyLang(); checkHealth(); });
+</script>
+</body>
+</html>

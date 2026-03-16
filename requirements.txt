@@ -1,0 +1,26 @@
+# ── Core framework ─────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# ── Database ───────────────────────────────────────────────────────────────────
+greenlet>=3.0.0               # Pre-built wheel required on Windows (no C++ compiler needed)
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.9        # PostgreSQL driver (ignored when using SQLite)
+
+# ── Authentication & Cryptography ──────────────────────────────────────────────
+passlib[bcrypt]>=1.7.4
+bcrypt>=3.2.0,<4.0.0              # passlib 1.7.4 is NOT compatible with bcrypt 4+
+python-jose[cryptography]>=3.3.0
+
+# ── Validation ─────────────────────────────────────────────────────────────────
+pydantic[email]>=2.0.0
+
+# ── Rate limiting ──────────────────────────────────────────────────────────────
+slowapi>=0.1.9
+
+# ── Environment ────────────────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+
+# ── Testing ────────────────────────────────────────────────────────────────────
+pytest>=8.0.0
+httpx>=0.27.0
