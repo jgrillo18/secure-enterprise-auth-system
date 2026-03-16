@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: secure-enterprise-auth-system
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install --upgrade pip && pip install 'bcrypt>=3.2.0,<4.0.0' && pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /auth/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: auth-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_EXPIRE_MINUTES
+        value: "30"
+      - key: REFRESH_EXPIRE_DAYS
+        value: "7"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+
+databases:
+  - name: auth-db
+    databaseName: authdb
+    user: authuser
+    plan: free
+    region: oregon

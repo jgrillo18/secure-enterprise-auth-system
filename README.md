@@ -5,6 +5,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111%2B-green.svg)](https://fastapi.tiangolo.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-orange.svg)](https://github.com/astral-sh/ruff)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/jgrillo18/secure-enterprise-auth-system)
 
 Enterprise-grade authentication system with JWT, refresh tokens, rate limiting and secure password hashing — designed for SaaS, microservices and cloud APIs.
 
@@ -68,7 +69,20 @@ secure-enterprise-auth-system/
 
 ## Quick Start
 
-### Option 1 — Docker Compose (PostgreSQL)
+### Option 1 — Deploy to Render (online, gratis)
+
+1. Haz clic en el botón **Deploy to Render** arriba  
+2. Inicia sesión en [render.com](https://render.com) con tu cuenta de GitHub  
+3. Render detectará el `render.yaml` y creará automáticamente:
+   - **Web Service** — la API con FastAPI
+   - **PostgreSQL database** — gratis incluida
+4. Haz clic en **Apply** — en ~3 minutos estará en vivo
+
+Tu URL pública será: `https://secure-enterprise-auth-system.onrender.com`
+
+---
+
+### Option 2 — Docker Compose (PostgreSQL local)
 
 ```bash
 cp .env.example .env
@@ -76,7 +90,7 @@ cp .env.example .env
 docker-compose up --build
 ```
 
-### Option 2 — Local (SQLite)
+### Option 3 — Local (SQLite)
 
 ```bash
 python -m venv venv
